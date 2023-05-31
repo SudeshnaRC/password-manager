@@ -1,0 +1,44 @@
+@startuml
+actor User as User
+participant "User Interface\nController" as UIC
+database "Password\nDatabase" as PDB
+participant "Password\nManager" as PM
+
+User -> UIC: Attempt account\nlogin at /login
+activate UIC
+UIC --> PDB: Query for verified\naccount
+UIC -> User: 404 NOT FOUND
+deactivate UIC
+
+group Registration
+User -> UIC : Register as new\naccount at /register
+activate UIC
+UIC -> PDB : Store new account\nas UNVERIFIED
+activate PDB
+UIC -> User: 200 OK
+deactivate UIC
+
+PM --> PDB : Query for new\nunverified accounts
+activate PM
+PM -> User : Send verification code
+
+User -> UIC: Attempt account\nlogin at /login
+activate UIC
+UIC --> PDB: Query for verified\naccount
+UIC -> User: 403 FORBIDDEN
+deactivate UIC
+
+User -> UIC: Verify account\nwith code at /verify
+activate UIC
+UIC -> PDB: Update account\nas VERIFIED
+UIC -> User: 201 CREATED
+deactivate UIC
+
+User -> UIC: Attempt account\nlogin at /login
+activate UIC
+UIC --> PDB: Query for verified\naccount
+UIC -> User: 200 OK
+deactivate UIC
+end
+
+@enduml
